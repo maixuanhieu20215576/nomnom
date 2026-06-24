@@ -2,19 +2,30 @@
 __pycache__/
 *.py[cod]
 *.pyo
+.pytest_cache/
 
-# Virtual environment
+# Virtual environments
+.venv/
 venv/
-env/
-.env/
+
+# uv
+.uv/
 
 # Environment variables
 .env
-.env.local
+.env.*
+!.env.example
+
+# Alembic (chỉ ignore file auto-generated, giữ lại versions/)
+alembic/__pycache__/
+
+# macOS
+.DS_Store
 
 # IDE
 .vscode/
 .idea/
 
-# OS
-.DS_Store
+# Logs
+*.log
+logs/

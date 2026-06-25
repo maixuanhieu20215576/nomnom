@@ -1,3 +1,6 @@
+# 1.0.4
+- [feat] upload images function 
+
 # 1.0.3
 - [feat] add tags and district into dishes 
 

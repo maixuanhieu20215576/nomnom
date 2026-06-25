@@ -3,10 +3,20 @@ from decimal import Decimal
 
 from geoalchemy2 import Geography
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Integer, Numeric, Text, func
+from sqlalchemy import ARRAY, DateTime, Integer, Numeric, Text, func
+from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
+
+material_tag_enum = ENUM(
+    "pork", "beef", "chicken", "duck", "vegetables", "noodle", "seafood", "rice", "fish",
+    name="material_tag",
+)
+taste_tag_enum = ENUM(
+    "spicy", "sweet", "bitter", "neutral", "salty", "sour", "savory", "greasy",
+    name="taste_tag",
+)
 
 
 class Dish(Base):
@@ -18,6 +28,10 @@ class Dish(Base):
 
     location: Mapped[str] = mapped_column(Geography(geometry_type="POINT", srid=4326), nullable=False)
     address_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    district: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    material_tag: Mapped[list[str] | None] = mapped_column(ARRAY(material_tag_enum), nullable=True)
+    taste_tag: Mapped[list[str] | None] = mapped_column(ARRAY(taste_tag_enum), nullable=True)
 
     food_vector: Mapped[list[float] | None] = mapped_column(Vector(384), nullable=True)
 

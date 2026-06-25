@@ -35,7 +35,10 @@ async def process_dish_job(job_id: int) -> None:
                 name=payload.name,
                 description=payload.description,
                 address_text=payload.address_text,
+                district=payload.district,
                 price=payload.price,
+                material_tag=payload.material_tag,
+                taste_tag=payload.taste_tag,
                 location=f"POINT({payload.location.longitude} {payload.location.latitude})",
                 food_vector=food_vector,
             )

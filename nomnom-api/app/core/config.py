@@ -6,13 +6,11 @@ class Settings(BaseSettings):
     secret_key: str
     environment: str = "development"
 
-    oci_tenancy: str
-    oci_user: str
-    oci_fingerprint: str
-    oci_private_key: str
-    oci_region: str
-    oci_namespace: str
-    oci_bucket_name: str
+    b2_endpoint_url: str
+    b2_key_id: str
+    b2_application_key: str
+    b2_bucket_name: str
+    b2_region: str
 
     class Config:
         env_file = ".env"

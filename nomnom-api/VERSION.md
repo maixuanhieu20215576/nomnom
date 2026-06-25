@@ -1,3 +1,6 @@
+# 1.0.5
+- [feat] use backblaze to save images 
+
 # 1.0.4
 - [feat] upload images function 
 

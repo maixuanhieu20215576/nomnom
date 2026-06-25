@@ -26,6 +26,8 @@ class DishBase(BaseModel):
 
 class DishCreate(DishBase):
     location: Location
+    rating: Decimal
+    image_object_names: list[str] = []
 
 
 class DishRead(DishBase):

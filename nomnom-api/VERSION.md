@@ -1,3 +1,6 @@
+# 1.0.6
+- [feat] dish review 
+
 # 1.0.5
 - [feat] use backblaze to save images 
 

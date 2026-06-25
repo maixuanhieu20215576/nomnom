@@ -6,6 +6,7 @@ from app.core.vectorUtils import foodVectorGenerate
 from app.models.dish import Dish
 from app.models.dish_job import DishJob
 from app.schemas.dish import DishCreate
+from app.services.dish_review_service import calculate_avg_rating, create_dish_reviews_for_new_dishes
 
 
 async def create_dish_job(payload: DishCreate, db: AsyncSession) -> DishJob:
@@ -44,6 +45,11 @@ async def process_dish_job(job_id: int) -> None:
             )
             session.add(dish)
             await session.flush()
+
+            await create_dish_reviews_for_new_dishes(dish.id, payload.image_object_names, payload.rating, session)
+            await session.flush()
+
+            dish.avg_rating = await calculate_avg_rating(dish.id, session)
 
             job.status = "done"
             job.dish_id = dish.id

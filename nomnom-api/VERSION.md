@@ -1,3 +1,6 @@
+# 1.0.7
+- [feat] user dish interaction (stop-interaction, reaction)
+
 # 1.0.6
 - [feat] dish review 
 

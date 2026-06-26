@@ -1,3 +1,7 @@
+# 1.0.10
+- [feat] add country field to dishes
+- [feat] add fruit to material_tag enum
+
 # 1.0.9
 - [feat] recompute_personal_vector job, runs every 5 minutes
 

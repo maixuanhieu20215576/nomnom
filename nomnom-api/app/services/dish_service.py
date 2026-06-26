@@ -37,6 +37,7 @@ async def process_dish_job(job_id: int) -> None:
                 description=payload.description,
                 address_text=payload.address_text,
                 district=payload.district,
+                country=payload.country,
                 price=payload.price,
                 material_tag=payload.material_tag,
                 taste_tag=payload.taste_tag,

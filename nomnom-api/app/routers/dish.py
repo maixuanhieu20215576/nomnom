@@ -18,6 +18,7 @@ def _to_dish_read(dish: Dish) -> DishRead:
         description=dish.description,
         address_text=dish.address_text,
         district=dish.district,
+        country=dish.country,
         price=dish.price,
         material_tag=dish.material_tag,
         taste_tag=dish.taste_tag,

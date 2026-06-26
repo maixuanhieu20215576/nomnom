@@ -10,12 +10,16 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
 material_tag_enum = ENUM(
-    "pork", "beef", "chicken", "duck", "vegetables", "noodle", "seafood", "rice", "fish",
+    "pork", "beef", "chicken", "duck", "vegetables", "noodle", "seafood", "rice", "fish", "fruit",
     name="material_tag",
 )
 taste_tag_enum = ENUM(
     "spicy", "sweet", "bitter", "neutral", "salty", "sour", "savory", "greasy",
     name="taste_tag",
+)
+country_enum = ENUM(
+    "viet", "thai", "korean", "europe", "japan", "china", "other",
+    name="country",
 )
 
 
@@ -32,6 +36,7 @@ class Dish(Base):
 
     material_tag: Mapped[list[str] | None] = mapped_column(ARRAY(material_tag_enum), nullable=True)
     taste_tag: Mapped[list[str] | None] = mapped_column(ARRAY(taste_tag_enum), nullable=True)
+    country: Mapped[str | None] = mapped_column(country_enum, nullable=True)
 
     food_vector: Mapped[list[float] | None] = mapped_column(Vector(384), nullable=True)
 

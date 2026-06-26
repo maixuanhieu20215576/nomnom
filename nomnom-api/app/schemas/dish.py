@@ -10,8 +10,9 @@ class Location(BaseModel):
     longitude: float
 
 
-MaterialTag = Literal["pork", "beef", "chicken", "duck", "vegetables", "noodle", "seafood", "rice", "fish"]
+MaterialTag = Literal["pork", "beef", "chicken", "duck", "vegetables", "noodle", "seafood", "rice", "fish", "fruit"]
 TasteTag = Literal["spicy", "sweet", "bitter", "neutral", "salty", "sour", "savory", "greasy"]
+Country = Literal["viet", "thai", "korean", "europe", "japan", "china", "other"]
 
 
 class DishBase(BaseModel):
@@ -22,6 +23,7 @@ class DishBase(BaseModel):
     price: Decimal | None = None
     material_tag: list[MaterialTag] | None = None
     taste_tag: list[TasteTag] | None = None
+    country: Country | None = None
 
 
 class DishCreate(DishBase):

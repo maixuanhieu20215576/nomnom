@@ -1,3 +1,7 @@
+# 1.0.8
+- [feat] personal_vector calculation service
+- [feat] APScheduler setup, update_dish_rating job
+
 # 1.0.7
 - [feat] user dish interaction (stop-interaction, reaction)
 

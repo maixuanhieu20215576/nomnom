@@ -5,6 +5,7 @@ from apscheduler.events import EVENT_JOB_ERROR, JobExecutionEvent
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.core.database import AsyncSessionLocal
+from app.services.achievement_service import update_all_users_achievements
 from app.services.dish_review_service import update_dish_rating
 from app.services.personal_vector_service import recompute_all_personal_vectors
 
@@ -16,6 +17,7 @@ scheduler = AsyncIOScheduler()
 class JobId(StrEnum):
     UPDATE_DISH_RATING = "update_dish_rating"
     RECOMPUTE_PERSONAL_VECTOR = "recompute_personal_vector"
+    UPDATE_USER_ACHIEVEMENTS = "update_user_achievements"
 
 
 async def run_update_dish_rating() -> None:
@@ -28,6 +30,12 @@ async def run_recompute_personal_vectors() -> None:
     async with AsyncSessionLocal() as db:
         updated_count = await recompute_all_personal_vectors(db)
         logger.info("recompute_personal_vector: updated %d user(s)", updated_count)
+
+
+async def run_update_user_achievements() -> None:
+    async with AsyncSessionLocal() as db:
+        updated_count = await update_all_users_achievements(db)
+        logger.info("update_user_achievements: updated %d user(s)", updated_count)
 
 
 def _on_job_error(event: JobExecutionEvent) -> None:
@@ -49,6 +57,13 @@ def start_scheduler() -> None:
         trigger="interval",
         minutes=5,
         id=JobId.RECOMPUTE_PERSONAL_VECTOR,
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        run_update_user_achievements,
+        trigger="interval",
+        days=1,
+        id=JobId.UPDATE_USER_ACHIEVEMENTS,
         replace_existing=True,
     )
     scheduler.start()

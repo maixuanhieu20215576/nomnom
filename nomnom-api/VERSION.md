@@ -1,3 +1,7 @@
+# 1.0.11
+- [feat] achievements and user_achievements tables
+- [feat] achievement criteria validation, refresh API, daily scheduler job
+
 # 1.0.10
 - [feat] add country field to dishes
 - [feat] add fruit to material_tag enum

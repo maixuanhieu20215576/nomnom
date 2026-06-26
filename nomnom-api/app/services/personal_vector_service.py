@@ -1,5 +1,5 @@
 import math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +16,12 @@ TIME_SPENT_WEIGHT = 1.0
 REACTION_WEIGHT = 3.0
 SHARE_WEIGHT = 5.0
 RECENCY_DECAY_WINDOW_DAYS = 7
+
+# Only interactions updated within this window are considered on each run, and the
+# resulting vector is blended into the existing personal_vector via EMA, instead of
+# recomputing from a user's entire interaction history every time.
+INTERACTION_LOOKBACK_MINUTES = 15
+PERSONAL_VECTOR_EMA_ALPHA = 0.3
 
 
 def _compute_interaction_score(interaction: UserDishInteraction) -> float:
@@ -37,13 +43,20 @@ def _compute_interaction_score(interaction: UserDishInteraction) -> float:
     return raw_score * decay
 
 
-# personal_vector = sum(score_i * food_vector_i) / sum(score_i) over all dishes the
-# user has interacted with (weighted average of food_vector by interaction score).
-async def recompute_personal_vector(user_id: int, db: AsyncSession) -> list[float] | None:
+# vector_from_recent_interactions = sum(score_i * food_vector_i) / sum(score_i) over
+# dishes the user interacted with in the last INTERACTION_LOOKBACK_MINUTES minutes
+# (weighted average of food_vector by interaction score).
+async def _compute_vector_from_recent_interactions(user_id: int, db: AsyncSession) -> list[float] | None:
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=INTERACTION_LOOKBACK_MINUTES)
+
     result = await db.execute(
         select(UserDishInteraction, Dish)
         .join(Dish, Dish.id == UserDishInteraction.dish_id)
-        .where(UserDishInteraction.user_id == user_id, Dish.food_vector.is_not(None))
+        .where(
+            UserDishInteraction.user_id == user_id,
+            UserDishInteraction.updated_at >= cutoff,
+            Dish.food_vector.is_not(None),
+        )
     )
     rows = result.all()
 
@@ -68,8 +81,38 @@ async def recompute_personal_vector(user_id: int, db: AsyncSession) -> list[floa
     return [value / total_score for value in weighted_sum]
 
 
+# personal_vector_new = alpha * vector_from_recent_interactions + (1 - alpha) * personal_vector_old
+# Exponential moving average: blends the latest signal into the existing personal_vector
+# instead of discarding history, so a single 15-minute batch doesn't overwrite it.
+def _blend_with_ema(old_vector: list[float] | None, new_vector: list[float]) -> list[float]:
+    if old_vector is None:
+        return new_vector
+
+    return [
+        PERSONAL_VECTOR_EMA_ALPHA * new_value + (1 - PERSONAL_VECTOR_EMA_ALPHA) * old_value
+        for new_value, old_value in zip(new_vector, old_vector)
+    ]
+
+
+async def recompute_personal_vector(user_id: int, db: AsyncSession) -> list[float] | None:
+    user = await db.get(User, user_id)
+    if user is None:
+        return None
+
+    new_vector = await _compute_vector_from_recent_interactions(user_id, db)
+    if new_vector is None:
+        return None
+
+    old_vector = list(user.personal_vector) if user.personal_vector is not None else None
+    return _blend_with_ema(old_vector, new_vector)
+
+
 async def recompute_all_personal_vectors(db: AsyncSession) -> int:
-    result = await db.execute(select(User.id))
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=INTERACTION_LOOKBACK_MINUTES)
+
+    result = await db.execute(
+        select(UserDishInteraction.user_id).where(UserDishInteraction.updated_at >= cutoff).distinct()
+    )
     user_ids = result.scalars().all()
 
     updated_count = 0

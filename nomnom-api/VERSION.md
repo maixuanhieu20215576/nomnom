@@ -1,3 +1,6 @@
+# 1.0.9
+- [feat] recompute_personal_vector job, runs every 5 minutes
+
 # 1.0.8
 - [feat] personal_vector calculation service
 - [feat] APScheduler setup, update_dish_rating job

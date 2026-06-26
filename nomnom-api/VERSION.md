@@ -1,3 +1,7 @@
+# 1.0.12
+- [feat] file-based logging (all/error/scheduler logs with rotation), log read API
+- [feat] api service in docker-compose, Dockerfile for the app
+
 # 1.0.11
 - [feat] achievements and user_achievements tables
 - [feat] achievement criteria validation, refresh API, daily scheduler job

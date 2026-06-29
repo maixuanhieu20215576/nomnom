@@ -6,6 +6,7 @@ from app.core.vectorUtils import foodVectorGenerate
 from app.models.dish import Dish
 from app.models.dish_job import DishJob
 from app.models.dish_review import DishReview
+from app.models.user_dish_interaction import UserDishInteraction
 from app.schemas.dish import DishCreate
 from app.services.dish_review_service import calculate_avg_rating, create_dish_reviews_for_new_dishes
 from app.services.storage_service import get_image_url
@@ -19,11 +20,41 @@ async def list_dishes_for_admin(page: int, page_size: int, db: AsyncSession) -> 
     return list(result.scalars().all()), total
 
 
+async def list_recommended_dish_ids(
+    personal_vector: list[float] | None, page: int, page_size: int, db: AsyncSession
+) -> list[int]:
+    offset = (page - 1) * page_size
+
+    if personal_vector is None:
+        result = await db.execute(
+            select(Dish.id).order_by(Dish.created_at.desc()).offset(offset).limit(page_size)
+        )
+        return list(result.scalars().all())
+
+    result = await db.execute(
+        select(Dish.id)
+        .where(Dish.food_vector.is_not(None))
+        .order_by(Dish.food_vector.op("<=>")(personal_vector))
+        .offset(offset)
+        .limit(page_size)
+    )
+    return list(result.scalars().all())
+
+
 async def get_dish_image_urls(dish_id: int, db: AsyncSession) -> list[str]:
     result = await db.execute(
         select(DishReview.image_object_name).where(DishReview.dish_id == dish_id).order_by(DishReview.id)
     )
     return [get_image_url(object_name) for object_name in result.scalars().all()]
+
+
+async def get_dish_reactioned(user_id: int, dish_id: int, db: AsyncSession) -> bool:
+    result = await db.execute(
+        select(UserDishInteraction.reactioned).where(
+            UserDishInteraction.user_id == user_id, UserDishInteraction.dish_id == dish_id
+        )
+    )
+    return result.scalar_one_or_none() or False
 
 
 async def create_dish_job(payload: DishCreate, db: AsyncSession) -> DishJob:

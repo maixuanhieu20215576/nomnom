@@ -3,8 +3,9 @@ from geoalchemy2.shape import to_shape
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import require_admin
+from app.core.security import get_current_user, require_admin
 from app.models.dish import Dish
+from app.models.user import User
 from app.schemas.dish import (
     DishCreate,
     DishJobCreated,
@@ -12,19 +13,22 @@ from app.schemas.dish import (
     DishListResponse,
     DishRead,
     Location,
+    RecommendedDishIdsResponse,
 )
 from app.services.dish_service import (
     create_dish_job,
     get_dish_image_urls,
     get_dish_job,
+    get_dish_reactioned,
     list_dishes_for_admin,
+    list_recommended_dish_ids,
     process_dish_job,
 )
 
 router = APIRouter(prefix="/dishes", tags=["dishes"])
 
 
-def _to_dish_read(dish: Dish, image_urls: list[str] | None = None) -> DishRead:
+def _to_dish_read(dish: Dish, image_urls: list[str] | None = None, reactioned: bool = False) -> DishRead:
     point = to_shape(dish.location)
     return DishRead(
         id=dish.id,
@@ -40,6 +44,7 @@ def _to_dish_read(dish: Dish, image_urls: list[str] | None = None) -> DishRead:
         food_vector=dish.food_vector,
         avg_rating=dish.avg_rating,
         image_urls=image_urls or [],
+        reactioned=reactioned,
         created_at=dish.created_at,
         updated_at=dish.updated_at,
     )
@@ -69,6 +74,17 @@ async def list_dishes_route(
     )
 
 
+@router.get("/recommended", response_model=RecommendedDishIdsResponse)
+async def list_recommended_dishes_route(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    ids = await list_recommended_dish_ids(current_user.personal_vector, page, page_size, db)
+    return RecommendedDishIdsResponse(ids=ids, page=page, page_size=page_size)
+
+
 @router.get("/jobs/{job_id}", response_model=DishJobStatus)
 async def get_dish_job_route(job_id: int, db: AsyncSession = Depends(get_db)):
     job = await get_dish_job(job_id, db)
@@ -85,9 +101,14 @@ async def get_dish_job_route(job_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{dish_id}", response_model=DishRead)
-async def get_dish_route(dish_id: int, db: AsyncSession = Depends(get_db)):
+async def get_dish_route(
+    dish_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     dish = await db.get(Dish, dish_id)
     if dish is None:
         raise HTTPException(status_code=404, detail="Dish not found")
     image_urls = await get_dish_image_urls(dish_id, db)
-    return _to_dish_read(dish, image_urls)
+    reactioned = await get_dish_reactioned(current_user.id, dish_id, db)
+    return _to_dish_read(dish, image_urls, reactioned)

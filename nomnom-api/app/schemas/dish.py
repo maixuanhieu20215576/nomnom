@@ -40,6 +40,7 @@ class DishRead(DishBase):
     food_vector: list[float] | None = None
     avg_rating: Decimal | None = None
     image_urls: list[str] = []
+    reactioned: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -47,6 +48,12 @@ class DishRead(DishBase):
 class DishListResponse(BaseModel):
     items: list[DishRead]
     total: int
+    page: int
+    page_size: int
+
+
+class RecommendedDishIdsResponse(BaseModel):
+    ids: list[int]
     page: int
     page_size: int
 

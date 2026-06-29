@@ -1,3 +1,9 @@
+# 1.0.16
+- [fix] GET /dishes/{dish_id} now returns reactioned state, requires auth
+
+# 1.0.15
+- [feat] recommended dishes API (nearest food_vector to personal_vector, paginated)
+
 # 1.0.14
 - [feat] JWT auth middleware, admin-only route protection
 

@@ -1,4 +1,5 @@
 const API_BASE = '/api'
+const TOKEN_STORAGE_KEY = 'nomnom_access_token'
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -7,16 +8,29 @@ export class ApiError extends Error {
   }
 }
 
+function authHeaders() {
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY)
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+function handleUnauthorized(status) {
+  if (status === 401) {
+    localStorage.removeItem(TOKEN_STORAGE_KEY)
+    localStorage.removeItem('nomnom_user')
+  }
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? 'GET',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: options.body ? JSON.stringify(options.body) : undefined,
   })
 
   const data = await res.json().catch(() => null)
 
   if (!res.ok) {
+    handleUnauthorized(res.status)
     throw new ApiError(data?.detail ?? 'Đã có lỗi xảy ra', res.status)
   }
 
@@ -26,12 +40,14 @@ async function request(path, options = {}) {
 async function requestFormData(path, formData) {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
+    headers: authHeaders(),
     body: formData,
   })
 
   const data = await res.json().catch(() => null)
 
   if (!res.ok) {
+    handleUnauthorized(res.status)
     throw new ApiError(data?.detail ?? 'Đã có lỗi xảy ra', res.status)
   }
 

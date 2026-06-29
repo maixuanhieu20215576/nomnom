@@ -4,13 +4,11 @@ from pydantic import BaseModel, ConfigDict
 
 
 class StopInteractionRequest(BaseModel):
-    user_id: int
     dish_id: int
     time_spent_on_post_ms: int
 
 
 class ReactionRequest(BaseModel):
-    user_id: int
     dish_id: int
     reactioned: bool
 

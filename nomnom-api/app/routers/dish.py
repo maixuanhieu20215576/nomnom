@@ -3,6 +3,7 @@ from geoalchemy2.shape import to_shape
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.models.dish import Dish
 from app.schemas.dish import (
     DishCreate,
@@ -44,7 +45,7 @@ def _to_dish_read(dish: Dish, image_urls: list[str] | None = None) -> DishRead:
     )
 
 
-@router.post("", response_model=DishJobCreated, status_code=202)
+@router.post("", response_model=DishJobCreated, status_code=202, dependencies=[Depends(require_admin)])
 async def create_dish_route(
     payload: DishCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)
 ):

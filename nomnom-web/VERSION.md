@@ -1,3 +1,6 @@
+# 1.0.2
+- [feat] integrate JWT access token into auth flow and API client
+
 # 1.0.1
 - [feat] login page & admin create dish page
 

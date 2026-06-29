@@ -27,7 +27,7 @@ export function AuthDialog({ onClose, onSuccess }) {
         mode === 'login'
           ? await login({ is_guest: false, username, password })
           : await signUp({ username, password })
-      onSuccess(data.user)
+      onSuccess(data.user, data.access_token)
     } catch (err) {
       if (err instanceof ApiError) {
         setError(

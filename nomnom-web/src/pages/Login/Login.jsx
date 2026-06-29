@@ -12,8 +12,8 @@ export function Login() {
   const [guestLoading, setGuestLoading] = useState(false)
   const [guestError, setGuestError] = useState('')
 
-  function handleAuthSuccess(user) {
-    signIn(user)
+  function handleAuthSuccess(user, accessToken) {
+    signIn(user, accessToken)
     setDialogOpen(false)
     navigate('/incoming', { replace: true })
   }
@@ -23,7 +23,7 @@ export function Login() {
     setGuestError('')
     try {
       const data = await login({ is_guest: true })
-      signIn(data.user)
+      signIn(data.user, data.access_token)
       navigate('/incoming', { replace: true })
     } catch (err) {
       setGuestError(err instanceof ApiError ? err.message : 'Không thể kết nối tới server')

@@ -1,10 +1,11 @@
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.logging_config import ALL_LOG_FILE, ERROR_LOG_FILE, SCHEDULER_LOG_FILE
+from app.core.security import require_admin
 
-router = APIRouter(prefix="/logs", tags=["logs"])
+router = APIRouter(prefix="/logs", tags=["logs"], dependencies=[Depends(require_admin)])
 
 LOG_FILES = {
     "scheduler": SCHEDULER_LOG_FILE,

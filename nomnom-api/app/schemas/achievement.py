@@ -53,9 +53,5 @@ class AchievementRead(BaseModel):
     created_at: datetime
 
 
-class RefreshUserAchievementsRequest(BaseModel):
-    user_id: int
-
-
 class RefreshUserAchievementsResponse(BaseModel):
     unlocked_achievement_ids: list[int]

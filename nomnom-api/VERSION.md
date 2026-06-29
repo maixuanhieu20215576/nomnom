@@ -1,3 +1,6 @@
+# 1.0.14
+- [feat] JWT auth middleware, admin-only route protection
+
 # 1.0.13
 - [feat] api for admin create dish
 

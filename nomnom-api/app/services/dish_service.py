@@ -1,12 +1,29 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.core.vectorUtils import foodVectorGenerate
 from app.models.dish import Dish
 from app.models.dish_job import DishJob
+from app.models.dish_review import DishReview
 from app.schemas.dish import DishCreate
 from app.services.dish_review_service import calculate_avg_rating, create_dish_reviews_for_new_dishes
+from app.services.storage_service import get_image_url
+
+
+async def list_dishes_for_admin(page: int, page_size: int, db: AsyncSession) -> tuple[list[Dish], int]:
+    total = (await db.execute(select(func.count()).select_from(Dish))).scalar_one()
+    result = await db.execute(
+        select(Dish).order_by(Dish.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    )
+    return list(result.scalars().all()), total
+
+
+async def get_dish_image_urls(dish_id: int, db: AsyncSession) -> list[str]:
+    result = await db.execute(
+        select(DishReview.image_object_name).where(DishReview.dish_id == dish_id).order_by(DishReview.id)
+    )
+    return [get_image_url(object_name) for object_name in result.scalars().all()]
 
 
 async def create_dish_job(payload: DishCreate, db: AsyncSession) -> DishJob:

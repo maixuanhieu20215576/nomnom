@@ -1,3 +1,6 @@
+# 1.0.13
+- [feat] api for admin create dish
+
 # 1.0.12
 - [feat] file-based logging (all/error/scheduler logs with rotation), log read API
 - [feat] api service in docker-compose, Dockerfile for the app

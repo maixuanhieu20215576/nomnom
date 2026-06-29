@@ -39,8 +39,16 @@ class DishRead(DishBase):
     location: Location
     food_vector: list[float] | None = None
     avg_rating: Decimal | None = None
+    image_urls: list[str] = []
     created_at: datetime
     updated_at: datetime
+
+
+class DishListResponse(BaseModel):
+    items: list[DishRead]
+    total: int
+    page: int
+    page_size: int
 
 
 class DishJobCreated(BaseModel):

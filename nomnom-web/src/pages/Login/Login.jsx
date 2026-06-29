@@ -15,7 +15,7 @@ export function Login() {
   function handleAuthSuccess(user, accessToken) {
     signIn(user, accessToken)
     setDialogOpen(false)
-    navigate('/incoming', { replace: true })
+    navigate('/reels', { replace: true })
   }
 
   async function handleGuestBrowse() {
@@ -24,7 +24,7 @@ export function Login() {
     try {
       const data = await login({ is_guest: true })
       signIn(data.user, data.access_token)
-      navigate('/incoming', { replace: true })
+      navigate('/reels', { replace: true })
     } catch (err) {
       setGuestError(err instanceof ApiError ? err.message : 'Không thể kết nối tới server')
     } finally {

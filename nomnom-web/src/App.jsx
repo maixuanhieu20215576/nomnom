@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
 import { Login } from './pages/Login/Login'
 import { Incoming } from './pages/Incoming/Incoming'
+import { Reels } from './pages/Reels/Reels'
 import { AdminLayout } from './pages/Admin/AdminLayout'
 import { DishManagement } from './pages/Admin/DishManagement/DishManagement'
 
@@ -23,6 +24,14 @@ function App() {
             element={
               <RequireAuth>
                 <Incoming />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/reels"
+            element={
+              <RequireAuth>
+                <Reels />
               </RequireAuth>
             }
           />

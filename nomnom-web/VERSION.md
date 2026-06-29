@@ -1,3 +1,9 @@
+# 1.0.4
+- [feat] horizontal/vertical swipe distinction, desktop arrow nav, dish meta (rating/price/address), fix reaction state sync
+
+# 1.0.3
+- [feat] reels page with recommended dishes feed, image swipe, and like reaction
+
 # 1.0.2
 - [feat] integrate JWT access token into auth flow and API client
 

@@ -83,3 +83,18 @@ export function createDish(payload) {
 export function getDishJob(jobId) {
   return request(`/dishes/jobs/${jobId}`)
 }
+
+export function getRecommendedDishIds(page = 1, pageSize = 10) {
+  return request(`/dishes/recommended?page=${page}&page_size=${pageSize}`)
+}
+
+export function setReaction(dishId, reactioned) {
+  return request('/reaction', { method: 'POST', body: { dish_id: dishId, reactioned } })
+}
+
+export function stopInteraction(dishId, timeSpentOnPostMs) {
+  return request('/stop-interaction', {
+    method: 'POST',
+    body: { dish_id: dishId, time_spent_on_post_ms: timeSpentOnPostMs },
+  })
+}

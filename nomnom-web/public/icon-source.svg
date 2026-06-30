@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#863bff"/>
+  <g transform="translate(50 47) rotate(-18)">
+    <!-- bone -->
+    <rect x="-5" y="14" width="10" height="26" rx="5" fill="#f5e6c8"/>
+    <circle cx="-7" cy="40" r="6" fill="#f5e6c8"/>
+    <circle cx="7" cy="40" r="6" fill="#f5e6c8"/>
+    <!-- meat -->
+    <path d="M0 -30
+             C 22 -30 30 -12 26 4
+             C 23 18 12 22 0 18
+             C -12 22 -23 18 -26 4
+             C -30 -12 -22 -30 0 -30 Z"
+          fill="#d97a2e"/>
+    <path d="M0 -30
+             C 22 -30 30 -12 26 4
+             C 23 18 12 22 0 18
+             C -12 22 -23 18 -26 4
+             C -30 -12 -22 -30 0 -30 Z"
+          fill="none" stroke="#b85f1f" stroke-width="2"/>
+    <!-- crispy texture dots -->
+    <circle cx="-10" cy="-15" r="2" fill="#b85f1f"/>
+    <circle cx="6" cy="-20" r="2" fill="#b85f1f"/>
+    <circle cx="14" cy="-6" r="2" fill="#b85f1f"/>
+    <circle cx="-16" cy="0" r="2" fill="#b85f1f"/>
+    <circle cx="2" cy="6" r="2" fill="#b85f1f"/>
+    <circle cx="-4" cy="-4" r="2" fill="#b85f1f"/>
+  </g>
+</svg>

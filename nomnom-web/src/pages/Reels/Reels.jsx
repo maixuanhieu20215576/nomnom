@@ -1,17 +1,28 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { stopInteraction } from '../../api/client'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import { DishCard } from './DishCard'
 import { useDishFeed } from './useDishFeed'
 import './Reels.css'
 
 const SWIPE_THRESHOLD = 50
 
+const dishVariants = {
+  enter: (direction) => ({ y: direction > 0 ? '100%' : '-100%' }),
+  center: { y: 0 },
+  exit: (direction) => ({ y: direction > 0 ? '-100%' : '100%' }),
+}
+
 export function Reels() {
   const { currentDish, hasNext, hasPrev, goNext, goPrev, loading, error } = useDishFeed()
+  const isMobile = useIsMobile()
   const dragStart = useRef(null)
   const viewingRef = useRef({ dishId: null, startedAt: null })
   const [imageIndex, setImageIndex] = useState(0)
+  const [imageDirection, setImageDirection] = useState(1)
   const [renderedDishId, setRenderedDishId] = useState(currentDish?.id)
+  const [direction, setDirection] = useState(1)
 
   const images = currentDish?.image_urls?.length ? currentDish.image_urls : [null]
 
@@ -42,6 +53,7 @@ export function Reels() {
   }, [])
 
   function goToImage(delta) {
+    setImageDirection(delta)
     setImageIndex((idx) => Math.min(Math.max(idx + delta, 0), images.length - 1))
   }
 
@@ -59,9 +71,24 @@ export function Reels() {
       if (deltaX > SWIPE_THRESHOLD) goToImage(1)
       else if (deltaX < -SWIPE_THRESHOLD) goToImage(-1)
     } else {
-      if (deltaY > SWIPE_THRESHOLD && hasNext) goNext()
-      else if (deltaY < -SWIPE_THRESHOLD && hasPrev) goPrev()
+      if (deltaY > SWIPE_THRESHOLD && hasNext) {
+        setDirection(1)
+        goNext()
+      } else if (deltaY < -SWIPE_THRESHOLD && hasPrev) {
+        setDirection(-1)
+        goPrev()
+      }
     }
+  }
+
+  function handleGoNext() {
+    setDirection(1)
+    goNext()
+  }
+
+  function handleGoPrev() {
+    setDirection(-1)
+    goPrev()
   }
 
   return (
@@ -74,37 +101,52 @@ export function Reels() {
     >
       {loading && <p className="reels-status">Đang tải...</p>}
       {!loading && error && !currentDish && <p className="reels-status">{error}</p>}
-      {!loading && currentDish && (
-        <DishCard
-          key={currentDish.id}
-          dish={currentDish}
-          imageIndex={imageIndex}
-          onPrevImage={() => goToImage(-1)}
-          onNextImage={() => goToImage(1)}
-          hasPrevImage={imageIndex > 0}
-          hasNextImage={imageIndex < images.length - 1}
-        />
-      )}
+      <AnimatePresence initial={false} custom={direction} mode="popLayout">
+        {!loading && currentDish && (
+          <motion.div
+            key={currentDish.id}
+            className="reels-dish-slide"
+            custom={direction}
+            variants={dishVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.28, ease: 'easeInOut' }}
+          >
+            <DishCard
+              dish={currentDish}
+              imageIndex={imageIndex}
+              imageDirection={imageDirection}
+              onPrevImage={() => goToImage(-1)}
+              onNextImage={() => goToImage(1)}
+              hasPrevImage={imageIndex > 0}
+              hasNextImage={imageIndex < images.length - 1}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       {!loading && !currentDish && !error && <p className="reels-status">Không có món ăn nào</p>}
 
-      <div className="reels-dish-nav">
-        <button
-          className="dish-card-arrow-btn"
-          onClick={goPrev}
-          disabled={!hasPrev}
-          aria-label="Món trước"
-        >
-          ▲
-        </button>
-        <button
-          className="dish-card-arrow-btn"
-          onClick={goNext}
-          disabled={!hasNext}
-          aria-label="Món tiếp theo"
-        >
-          ▼
-        </button>
-      </div>
+      {!isMobile && (
+        <div className="reels-dish-nav">
+          <button
+            className="dish-card-arrow-btn"
+            onClick={handleGoPrev}
+            disabled={!hasPrev}
+            aria-label="Món trước"
+          >
+            ▲
+          </button>
+          <button
+            className="dish-card-arrow-btn"
+            onClick={handleGoNext}
+            disabled={!hasNext}
+            aria-label="Món tiếp theo"
+          >
+            ▼
+          </button>
+        </div>
+      )}
     </div>
   )
 }

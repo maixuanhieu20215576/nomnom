@@ -1,3 +1,6 @@
+# 1.0.5
+- [feat] improve UX for mobile, test PWA on mobile device, add swipe transition
+
 # 1.0.4
 - [feat] horizontal/vertical swipe distinction, desktop arrow nav, dish meta (rating/price/address), fix reaction state sync
 

@@ -1,17 +1,41 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
 import { setReaction } from '../../api/client'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 function formatPrice(price) {
   if (price == null) return null
   return `${Number(price).toLocaleString('vi-VN')}đ`
 }
 
-export function DishCard({ dish, imageIndex, onPrevImage, onNextImage, hasPrevImage, hasNextImage }) {
+const imageVariants = {
+  enter: (direction) => ({ x: direction > 0 ? '100%' : '-100%' }),
+  center: { x: 0 },
+  exit: (direction) => ({ x: direction > 0 ? '-100%' : '100%' }),
+}
+
+export function DishCard({
+  dish,
+  imageIndex,
+  imageDirection,
+  onPrevImage,
+  onNextImage,
+  hasPrevImage,
+  hasNextImage,
+}) {
   const [liked, setLiked] = useState(dish.reactioned ?? false)
   const [reacting, setReacting] = useState(false)
   const [captionExpanded, setCaptionExpanded] = useState(false)
+  const [loadedImages, setLoadedImages] = useState(() => new Set())
+  const isMobile = useIsMobile()
 
   const images = dish.image_urls?.length ? dish.image_urls : [null]
+  const currentImageUrl = images[imageIndex]
+  const isCurrentImageLoaded = !currentImageUrl || loadedImages.has(currentImageUrl)
+
+  function handleImageLoaded(url) {
+    setLoadedImages((prev) => (prev.has(url) ? prev : new Set(prev).add(url)))
+  }
 
   async function handleToggleLike() {
     if (reacting) return
@@ -30,16 +54,42 @@ export function DishCard({ dish, imageIndex, onPrevImage, onNextImage, hasPrevIm
   return (
     <div className="dish-card">
       <div className="dish-card-images">
-        {images[imageIndex] ? (
-          <img
-            src={images[imageIndex]}
-            alt={dish.name}
-            className="dish-card-image"
-            draggable={false}
-            onDragStart={(e) => e.preventDefault()}
-          />
-        ) : (
-          <div className="dish-card-image dish-card-image-placeholder" />
+        <AnimatePresence initial={false} custom={imageDirection}>
+          <motion.div
+            key={imageIndex}
+            className="dish-card-image-slide"
+            custom={imageDirection}
+            variants={imageVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+          >
+            {currentImageUrl ? (
+              <img
+                src={currentImageUrl}
+                alt={dish.name}
+                className="dish-card-image"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+                onLoad={() => handleImageLoaded(currentImageUrl)}
+              />
+            ) : (
+              <div className="dish-card-image dish-card-image-placeholder" />
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {!isCurrentImageLoaded && (
+          <div className="dish-card-image-spinner" aria-label="Đang tải ảnh">
+            <span className="dish-card-spinner" />
+          </div>
+        )}
+
+        {images.length > 1 && (
+          <span className="dish-card-image-counter">
+            {imageIndex + 1}/{images.length}
+          </span>
         )}
 
         {images.length > 1 && (
@@ -50,7 +100,7 @@ export function DishCard({ dish, imageIndex, onPrevImage, onNextImage, hasPrevIm
           </div>
         )}
 
-        {images.length > 1 && (
+        {images.length > 1 && !isMobile && (
           <div className="dish-card-image-nav">
             <button
               className="dish-card-arrow-btn"

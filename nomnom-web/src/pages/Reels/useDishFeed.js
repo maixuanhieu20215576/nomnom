@@ -4,6 +4,7 @@ import { getDish, getRecommendedDishIds } from '../../api/client'
 const PAGE_SIZE = 10
 const PREFETCH_THRESHOLD = 3
 const CACHE_BEHIND = 3
+const PREFETCH_AHEAD = 3
 
 function preloadImage(url) {
   if (!url) return
@@ -21,6 +22,7 @@ export function useDishFeed() {
   const nextPageRef = useRef(1)
   const fetchingIdsRef = useRef(new Set())
   const idsPageLoadingRef = useRef(false)
+  const hasMoreIdsRef = useRef(true)
 
   const fetchDish = useCallback(async (dishId) => {
     if (dishCache.has(dishId) || fetchingIdsRef.current.has(dishId)) return
@@ -41,11 +43,15 @@ export function useDishFeed() {
   }, [dishCache])
 
   const loadMoreIds = useCallback(async () => {
-    if (idsPageLoadingRef.current) return
+    if (idsPageLoadingRef.current || !hasMoreIdsRef.current) return
     idsPageLoadingRef.current = true
     try {
       const data = await getRecommendedDishIds(nextPageRef.current, PAGE_SIZE)
       nextPageRef.current += 1
+      if (data.ids.length === 0) {
+        hasMoreIdsRef.current = false
+        return
+      }
       setDishIds((prev) => [...prev, ...data.ids])
     } catch {
       setError('Không thể tải thêm món ăn')
@@ -81,8 +87,10 @@ export function useDishFeed() {
       const currentId = dishIds[currentIndex]
       if (currentId != null) await fetchDish(currentId)
 
-      const nextId = dishIds[currentIndex + 1]
-      if (nextId != null) await fetchDish(nextId)
+      for (let offset = 1; offset <= PREFETCH_AHEAD; offset += 1) {
+        const aheadId = dishIds[currentIndex + offset]
+        if (aheadId != null) await fetchDish(aheadId)
+      }
 
       if (dishIds.length - currentIndex <= PREFETCH_THRESHOLD) {
         await loadMoreIds()

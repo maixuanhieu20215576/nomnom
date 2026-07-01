@@ -1,3 +1,6 @@
+# 1.0.6
+- [fix] improve reels images quality
+
 # 1.0.5
 - [feat] improve UX for mobile, test PWA on mobile device, add swipe transition
 
